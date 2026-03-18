@@ -9,6 +9,8 @@ alwaysApply: true
 Auto-generated from all feature plans. Last updated: 2026-03-17
 
 ## Active Technologies
+- Python 3.11+ + pydantic-settings, notion-client, google-api-python-client, google-auth-oauthlib, python-dateutil (002-docker-10min-loop)
+- 환경 변수(`.env`), 파일 자격증명(`token.json`, `contact.json`), 런타임 메모리 상태 (002-docker-10min-loop)
 
 - Python 3.11+ + notion-client, google-api-python-client, google-auth-oauthlib, python-dateutil, pydantic-settings (001-notion-gcal-sync)
 
@@ -28,6 +30,7 @@ cd src [ONLY COMMANDS FOR ACTIVE TECHNOLOGIES][ONLY COMMANDS FOR ACTIVE TECHNOLO
 Python 3.11+: Follow standard conventions
 
 ## Recent Changes
+- 002-docker-10min-loop: Added Python 3.11+ + pydantic-settings, notion-client, google-api-python-client, google-auth-oauthlib, python-dateutil
 
 - 001-notion-gcal-sync: Added Python 3.11+ + notion-client, google-api-python-client, google-auth-oauthlib, python-dateutil, pydantic-settings
 

@@ -16,6 +16,7 @@ build/
 token.json
 credentials.json
 google_calendar_credentials.json
+oauth_client_secret.json
 contact.json
 tests/
 specs/

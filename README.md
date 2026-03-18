@@ -7,7 +7,7 @@ Notion Todo를 Google Calendar 일정으로 동기화하는 Python 백엔드 워
 - 동기화 방향: **Notion -> Google Calendar** (역방향 미지원)
 - 동기화 기준: Notion 항목 중 `Due Date`가 있는 항목
 - 멱등성 기준: `Google ID` 비어있음=create, 존재=update
-- 실행 모델: 1회 실행 워커 + 외부 스케줄러(cron/systemd)
+- 실행 모델: 기본 loop 모드(10분 주기) + 필요 시 1회 실행(`--once`)
 
 ## 설정
 
@@ -32,12 +32,21 @@ DRY_RUN=false
 PAGE_SIZE=100
 MAX_RETRIES=3
 RETRY_BASE_SECONDS=0.3
+SYNC_INTERVAL_SECONDS=600
+SHUTDOWN_TIMEOUT_SECONDS=30
+DRIFT_WARNING_SECONDS=30
 ```
 
 ## 실행 방법
 
 ```bash
 poetry install
+poetry run python -m src.main
+```
+
+단일 실행 모드:
+
+```bash
 poetry run python -m src.main --once
 ```
 
@@ -52,6 +61,13 @@ docker run --rm --env-file .env \
 ```
 
 cron 샘플은 `ops/cron.sample` 참고.
+
+## Loop 운영 로그 필드
+
+- `cycle_started`: `run_id`, `started_at`
+- `cycle_finished`: `run_id`, `started_at`, `finished_at`, `next_run_at`, `created_count`, `updated_count`, `failed_count`
+- `drift_warning`: `drift_seconds`, `threshold_seconds`
+- `loop_stopped`: `cycles`, `failures`, `successful_after_failure`, `recovery_rate`, `safe_to_exit`
 
 ## 품질 게이트
 
@@ -78,6 +94,7 @@ pip-audit -r /tmp/requirements.txt
 - A02 Cryptographic Failures: 비밀정보 평문 커밋 금지, 저장소 외부 관리
 - A03 Injection: 외부 입력 로깅/전달 시 검증
 - A05 Security Misconfiguration: Docker 이미지/환경변수 권한 최소화
+- A06 Vulnerable and Outdated Components: 월 1회 + 릴리스 전 `pip-audit` 실행
 - A09 Security Logging and Monitoring Failures: 실패 로그 필드 표준화
 
 ## 운영 Runbook (한국어)
@@ -86,12 +103,14 @@ pip-audit -r /tmp/requirements.txt
 2. 외부 API 장애: 다음 주기 자동 재시도 확인
 3. 인증 문제: `token.json` 갱신 후 재실행
 4. 매핑 문제: `contact.json` 수정 후 재실행
-5. 복구 확인: `poetry run python -m src.main --once` 결과의 `failed_count` 확인
+5. 복구 확인: `loop_stopped` 로그의 `recovery_rate`와 `successful_after_failure` 확인
 
 ## 성능/지연 검증
 
 - 지연 SLO: 생성/수정 반영 1분 이내
 - 처리량 목표: 500건 60초 이내
+- 드리프트 경고: 주기 지연이 `DRIFT_WARNING_SECONDS`를 넘으면 경고 로그 출력
+- 장애 복구율: 실패 발생 후 다음 주기 성공 비율(`recovery_rate`) 기록
 - 관련 테스트:
   - `tests/integration/test_sync_latency.py`
   - `tests/integration/test_sync_performance.py`
@@ -110,4 +129,4 @@ poetry run pytest
 
 - `poetry run black --check src tests` -> PASS
 - `poetry run pylint src` -> PASS (10.00/10)
-- `poetry run pytest` -> PASS (21 passed, coverage 87.88%)
+- `poetry run pytest` -> PASS (34 passed, coverage 90.29%)

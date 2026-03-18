@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     page_size: int = 100
     max_retries: int = 3
     retry_base_seconds: float = 0.3
+    sync_interval_seconds: int = 600
+    shutdown_timeout_seconds: int = 30
+    drift_warning_seconds: int = 30
 
     model_config = SettingsConfigDict(
         env_file=".env",

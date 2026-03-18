@@ -1,0 +1,4 @@
+*/5 * * * * /usr/bin/docker run --rm --env-file /path/.env \
+  -v /path/token.json:/app/token.json \
+  -v /path/contact.json:/app/contact.json \
+  notion-gcal-sync python -m src.main --once

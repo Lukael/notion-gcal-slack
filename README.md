@@ -54,9 +54,10 @@ poetry run python -m src.main --once
 
 ```bash
 docker build -t notion-gcal-sync -f ops/Dockerfile .
-docker run --rm --env-file .env \
+docker run -d --env-file .env \
   -v "$PWD/token.json:/app/token.json" \
   -v "$PWD/contact.json:/app/contact.json" \
+  -v "$PWD/google_calendar_credentials.json:/app/google_calendar_credentials.json" \
   notion-gcal-sync
 ```
 
